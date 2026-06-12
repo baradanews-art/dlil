@@ -1,0 +1,18 @@
+# 1. تهيئة Git في المشروع
+git init
+
+# 2. إضافة جميع الملفات (.gitignore سيمنع رفع الملفات الحساسة)
+git add .
+
+# 3. التحقق من الملفات التي سيتم رفعها (تأكد أن .env و vendor ليسا موجودين)
+git status
+
+# 4. عمل أول commit
+git commit -m "first commit"
+
+# 5. ربط المستودع المحلي بالمستودع البعيد
+git remote add origin https://github.com/اسم-المستخدم/اسم-المشروع.git
+
+# 6. رفع الكود إلى GitHub
+git branch -M main
+git push -u origin main
