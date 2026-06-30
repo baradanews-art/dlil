@@ -40,9 +40,22 @@ class Location extends Model
         return $this->hasMany(Location::class, 'parent_id');
     }
     
+    // ✅ العلاقة القديمة (للتعديلات المستقبلية - يمكن إزالتها)
     public function businesses(): HasMany
     {
-        return $this->hasMany(Business::class);
+        return $this->hasMany(Business::class, 'location_id');
+    }
+    
+    // ✅ العلاقة بالمحافظات (المنشآت التي تتبع هذه المحافظة)
+    public function governorateBusinesses(): HasMany
+    {
+        return $this->hasMany(Business::class, 'governorate_id');
+    }
+    
+    // ✅ العلاقة بالمناطق (المنشآت التي تتبع هذه المنطقة)
+    public function regionBusinesses(): HasMany
+    {
+        return $this->hasMany(Business::class, 'region_id');
     }
     
     // ============================================================
@@ -59,7 +72,22 @@ class Location extends Model
     
     public function getBusinessesCountAttribute(): int
     {
-        return $this->businesses()->where('is_approved', 1)->count();
+        // ✅ إصلاح: نبحث في governorate_id و region_id بدلاً من location_id
+        $count = 0;
+        
+        // إذا كان هذا الموقع محافظة (ليس له أب)
+        if ($this->parent_id === null) {
+            $count = Business::where('governorate_id', $this->id)
+                ->where('is_approved', 1)
+                ->count();
+        } else {
+            // إذا كان هذا الموقع منطقة (له أب)
+            $count = Business::where('region_id', $this->id)
+                ->where('is_approved', 1)
+                ->count();
+        }
+        
+        return $count;
     }
     
     // ============================================================

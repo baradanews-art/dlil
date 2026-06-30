@@ -42,7 +42,7 @@ class DashboardController extends Controller
         
         // ✅ المنشآت المعلقة (بدون تخزين مؤقت لأنها تتغير كثيراً)
         $pendingBusinesses = Business::pending()
-            ->with(['category', 'location'])
+            ->with(['category', 'governorate', 'region'])  // ✅ تغيير location إلى governorate و region
             ->latest()
             ->paginate(10);
         
@@ -53,7 +53,7 @@ class DashboardController extends Controller
             ->get();
         
         // ✅ أحدث المنشآت
-        $latestBusinesses = Business::with(['category', 'location'])
+        $latestBusinesses = Business::with(['category', 'governorate', 'region'])  // ✅ تغيير location إلى governorate و region
             ->latest()
             ->take(10)
             ->get();

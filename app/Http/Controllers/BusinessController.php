@@ -34,7 +34,8 @@ class BusinessController extends Controller
             'title' => 'required|string|max:255',
             'phone' => 'required|string|max:100',
             'category_id' => 'required|exists:categories,id',
-            'location_id' => 'required|exists:locations,id',
+            'governorate_id' => 'required|exists:locations,id',
+            'region_id' => 'required|exists:locations,id',
             'description' => 'required|string|min:10',
             'address_detail' => 'nullable|string|max:255',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
@@ -52,7 +53,8 @@ class BusinessController extends Controller
             $business->slug = $this->generateUniqueSlug($validated['title']);
             $business->phone = $validated['phone'];
             $business->category_id = $validated['category_id'];
-            $business->location_id = $validated['location_id'];
+            $business->governorate_id = $validated['governorate_id'];
+            $business->region_id = $validated['region_id'];
             $business->address_detail = $validated['address_detail'] ?? null;
             $business->description = $validated['description'];
             $business->delivery_available = $request->has('delivery_available');
@@ -63,29 +65,42 @@ class BusinessController extends Controller
             $business->price_list = [];
             
             // ============================================================
-            // ✅ رفع اللوجو - طريقة لارافيل القياسية والمضمونة
+            // ✅ رفع اللوجو - طريقة مبسطة
             // ============================================================
-            if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
+            if ($request->hasFile('logo')) {
                 $file = $request->file('logo');
-                $filename = time() . '_logo_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
-                $destination = public_path('uploads/logos');
+                $filename = time() . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
+                $destination = 'uploads/logos/';
                 
-                // رفع ونقل الملف
-                $file->move($destination, $filename);
-                $business->logo = 'uploads/logos/' . $filename;
+                // مسار التخزين
+                $uploadPath = $_SERVER['DOCUMENT_ROOT'] . '/dlil/public/' . $destination;
+                
+                // إنشاء المجلد إذا لم يكن موجوداً
+                if (!is_dir($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                
+                // نقل الملف
+                $file->move($uploadPath, $filename);
+                $business->logo = $destination . $filename;
             }
             
             // ============================================================
-            // ✅ رفع الغلاف - طريقة لارافيل القياسية والمضمونة
+            // ✅ رفع الغلاف - طريقة مبسطة
             // ============================================================
-            if ($request->hasFile('cover') && $request->file('cover')->isValid()) {
+            if ($request->hasFile('cover')) {
                 $file = $request->file('cover');
-                $filename = time() . '_cover_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
-                $destination = public_path('uploads/covers');
+                $filename = time() . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
+                $destination = 'uploads/covers/';
                 
-                // رفع ونقل الملف
-                $file->move($destination, $filename);
-                $business->cover = 'uploads/covers/' . $filename;
+                $uploadPath = $_SERVER['DOCUMENT_ROOT'] . '/dlil/public/' . $destination;
+                
+                if (!is_dir($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                
+                $file->move($uploadPath, $filename);
+                $business->cover = $destination . $filename;
             }
             
             $business->save();
@@ -106,7 +121,7 @@ class BusinessController extends Controller
     public function show($slug)
     {
         $business = Business::where('slug', $slug)
-            ->with(['category', 'location.parent', 'reviews' => function ($q) {
+            ->with(['category', 'governorate', 'region', 'reviews' => function ($q) {
                 $q->latest()->limit(10);
             }])
             ->firstOrFail();

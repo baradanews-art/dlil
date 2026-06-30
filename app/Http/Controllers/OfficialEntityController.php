@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\OfficialEntity;
 use App\Models\Location;
 use Illuminate\Http\Request;
+use App\Traits\ImageUploadTrait;
 
 class OfficialEntityController extends Controller
 {
+    use ImageUploadTrait;
+
     /**
      * ✅ عرض المؤسسات الحكومية
      */
@@ -102,18 +105,18 @@ class OfficialEntityController extends Controller
     }
     
     /**
-     * ✅ طريقة مساعدة لعرض القوائم
+     * ✅ طريقة مساعدة لعرض القوائم مع Pagination وفلاتر صحيحة
      */
     private function renderIndex(Request $request, string $type, array $pageData)
     {
         $query = OfficialEntity::where('type', $type)->active()->ordered();
         
-        // ✅ فلترة حسب المدينة
+        // ✅ فلترة حسب المحافظة (city_id)
         if ($request->filled('city_id')) {
-            $query->inCity($request->city_id);
+            $query->where('city_id', $request->city_id);
         }
         
-        // ✅ فلترة حسب المنطقة
+        // ✅ فلترة حسب المنطقة (region_id)
         if ($request->filled('region_id')) {
             $query->where('region_id', $request->region_id);
         }
@@ -123,12 +126,26 @@ class OfficialEntityController extends Controller
             $query->where('sub_type', $request->sub_type);
         }
         
-        // ✅ فلترة حسب البحث
+        // ✅ فلترة حسب البحث النصي (يبحث في الاسم، الوصف، العنوان، واسم المحافظة والمنطقة)
         if ($request->filled('search')) {
-            $query->search($request->search);
+            $searchTerm = '%' . $request->search . '%';
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'LIKE', $searchTerm)
+                  ->orWhere('description', 'LIKE', $searchTerm)
+                  ->orWhere('address', 'LIKE', $searchTerm)
+                  // البحث في اسم المحافظة المرتبطة
+                  ->orWhereHas('city', function($cityQ) use ($searchTerm) {
+                      $cityQ->where('name', 'LIKE', $searchTerm);
+                  })
+                  // البحث في اسم المنطقة المرتبطة
+                  ->orWhereHas('region', function($regionQ) use ($searchTerm) {
+                      $regionQ->where('name', 'LIKE', $searchTerm);
+                  });
+            });
         }
         
-        $entities = $query->get();
+        // ✅ Paginate (12 عنصر لكل صفحة)
+        $entities = $query->paginate(12);
         
         // ✅ جلب المدن للمرشحات
         $cities = Location::governorates()->ordered()->get();
