@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'الجهات الرسمية' }} | دليل سوريا التجاري</title>
-    <meta name="description" content="{{ $description ?? 'دليل الجهات الرسمية في سوريا' }}">
+    <title><?php echo e($title ?? 'الجهات الرسمية'); ?> | دليل سوريا التجاري</title>
+    <meta name="description" content="<?php echo e($description ?? 'دليل الجهات الرسمية في سوريا'); ?>">
     <meta name="robots" content="index, follow">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -34,57 +34,57 @@
 </head>
 <body class="bg-slate-50 font-sans antialiased">
 
-    {{-- Header Section --}}
-    <div class="bg-gradient-to-r {{ $bgColor ?? 'from-green-700 to-green-600' }} text-white py-16 px-4 text-center">
+    
+    <div class="bg-gradient-to-r <?php echo e($bgColor ?? 'from-green-700 to-green-600'); ?> text-white py-16 px-4 text-center">
         <div class="max-w-4xl mx-auto">
             <div class="text-6xl mb-4">
-                <i class="fas {{ $icon ?? 'fa-landmark' }}"></i>
+                <i class="fas <?php echo e($icon ?? 'fa-landmark'); ?>"></i>
             </div>
-            <h1 class="text-3xl md:text-4xl font-black">{{ $title ?? 'الجهات الرسمية' }}</h1>
-            <p class="text-white/80 mt-2">{{ $description ?? 'دليل شامل للجهات الرسمية في سوريا' }}</p>
-            <a href="{{ route('home') }}" class="inline-block mt-6 bg-white/20 hover:bg-white/30 rounded-xl px-6 py-2 text-sm transition-all">
+            <h1 class="text-3xl md:text-4xl font-black"><?php echo e($title ?? 'الجهات الرسمية'); ?></h1>
+            <p class="text-white/80 mt-2"><?php echo e($description ?? 'دليل شامل للجهات الرسمية في سوريا'); ?></p>
+            <a href="<?php echo e(route('home')); ?>" class="inline-block mt-6 bg-white/20 hover:bg-white/30 rounded-xl px-6 py-2 text-sm transition-all">
                 <i class="fas fa-arrow-right ml-2"></i> العودة للرئيسية
             </a>
         </div>
     </div>
 
-    {{-- Search Section --}}
+    
     <div class="max-w-7xl mx-auto px-4 py-8">
         <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
             <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                 <i class="fas fa-search text-emerald-600"></i> بحث وتصفية
             </h3>
-            <form method="GET" action="{{ url()->current() }}" id="filterForm" class="space-y-4">
-                {{-- Search Input --}}
-                <input type="text" name="search" value="{{ request('search') }}" 
+            <form method="GET" action="<?php echo e(url()->current()); ?>" id="filterForm" class="space-y-4">
+                
+                <input type="text" name="search" value="<?php echo e(request('search')); ?>" 
                        placeholder="ابحث بالاسم، الوصف، أو العنوان، أو المحافظة/المنطقة..." 
                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {{-- City Filter --}}
+                    
                     <select name="city_id" id="city_id" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm">
                         <option value="">جميع المحافظات</option>
-                        @foreach($cities ?? [] as $city)
-                            <option value="{{ $city->id }}" {{ request('city_id') == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
-                        @endforeach
+                        <?php $__currentLoopData = $cities ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $city): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($city->id); ?>" <?php echo e(request('city_id') == $city->id ? 'selected' : ''); ?>><?php echo e($city->name); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
                     
-                    {{-- Region Filter --}}
+                    
                     <select name="region_id" id="region_id" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm">
                         <option value="">جميع المناطق</option>
-                        @if($regions && count($regions) > 0)
-                            @foreach($regions as $region)
-                                <option value="{{ $region->id }}" {{ request('region_id') == $region->id ? 'selected' : '' }}>{{ $region->name }}</option>
-                            @endforeach
-                        @endif
+                        <?php if($regions && count($regions) > 0): ?>
+                            <?php $__currentLoopData = $regions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $region): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($region->id); ?>" <?php echo e(request('region_id') == $region->id ? 'selected' : ''); ?>><?php echo e($region->name); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        <?php endif; ?>
                     </select>
                     
-                    {{-- Sub Type Filter --}}
+                    
                     <select name="sub_type" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm">
                         <option value="">جميع الأنواع</option>
-                        @foreach($subTypes ?? [] as $key => $label)
-                            <option value="{{ $key }}" {{ request('sub_type') == $key ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
+                        <?php $__currentLoopData = $subTypes ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($key); ?>" <?php echo e(request('sub_type') == $key ? 'selected' : ''); ?>><?php echo e($label); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
                 </div>
                 
@@ -92,89 +92,92 @@
                     <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl transition-all">
                         <i class="fas fa-search ml-1"></i> بحث
                     </button>
-                    <a href="{{ url()->current() }}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-2 rounded-xl transition-all">
+                    <a href="<?php echo e(url()->current()); ?>" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-2 rounded-xl transition-all">
                         <i class="fas fa-undo-alt ml-1"></i> إعادة ضبط
                     </a>
                 </div>
             </form>
         </div>
         
-        {{-- Results Count --}}
+        
         <div class="mb-4 flex justify-between items-center">
             <span class="text-sm text-slate-500">
-                <i class="fas fa-building ml-1"></i> {{ $entities->total() }} نتيجة
+                <i class="fas fa-building ml-1"></i> <?php echo e($entities->total()); ?> نتيجة
             </span>
-            @if($entities->total() > 0)
-                <span class="text-xs text-slate-400">عرض {{ $entities->firstItem() }} - {{ $entities->lastItem() }} من {{ $entities->total() }}</span>
-            @endif
+            <?php if($entities->total() > 0): ?>
+                <span class="text-xs text-slate-400">عرض <?php echo e($entities->firstItem()); ?> - <?php echo e($entities->lastItem()); ?> من <?php echo e($entities->total()); ?></span>
+            <?php endif; ?>
         </div>
         
-        {{-- Results Grid --}}
+        
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @forelse($entities as $entity)
-            <a href="{{ route('official.show', $entity->slug) }}" class="entity-card bg-white rounded-2xl shadow-md hover:shadow-xl transition-all p-6 block group">
+            <?php $__empty_1 = true; $__currentLoopData = $entities; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $entity): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+            <a href="<?php echo e(route('official.show', $entity->slug)); ?>" class="entity-card bg-white rounded-2xl shadow-md hover:shadow-xl transition-all p-6 block group">
                 <div class="flex items-center gap-4 mb-4">
                     <div class="w-16 h-16 rounded-xl flex items-center justify-center transition-colors"
-                         style="background-color: {{ $entity->color == 'green' ? '#dcfce7' : ($entity->color == 'red' ? '#fee2e2' : '#dbeafe') }}">
-                        <i class="fas {{ $entity->icon }} text-2xl" style="color: {{ $entity->color == 'green' ? '#059669' : ($entity->color == 'red' ? '#dc2626' : '#2563eb') }}"></i>
+                         style="background-color: <?php echo e($entity->color == 'green' ? '#dcfce7' : ($entity->color == 'red' ? '#fee2e2' : '#dbeafe')); ?>">
+                        <i class="fas <?php echo e($entity->icon); ?> text-2xl" style="color: <?php echo e($entity->color == 'green' ? '#059669' : ($entity->color == 'red' ? '#dc2626' : '#2563eb')); ?>"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">{{ $entity->name }}</h3>
-                        @if($entity->sub_type)
-                            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{{ $entity->sub_type_label }}</span>
-                        @endif
-                        @if($entity->working_hours)
-                            <p class="text-xs text-slate-500 mt-1"><i class="far fa-clock ml-1"></i> {{ $entity->working_hours }}</p>
-                        @endif
+                        <h3 class="font-bold text-slate-900 group-hover:text-emerald-600 transition-colors"><?php echo e($entity->name); ?></h3>
+                        <?php if($entity->sub_type): ?>
+                            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full"><?php echo e($entity->sub_type_label); ?></span>
+                        <?php endif; ?>
+                        <?php if($entity->working_hours): ?>
+                            <p class="text-xs text-slate-500 mt-1"><i class="far fa-clock ml-1"></i> <?php echo e($entity->working_hours); ?></p>
+                        <?php endif; ?>
                     </div>
                 </div>
                 
-                {{-- Display City and Region if available --}}
-                @if($entity->city || $entity->region)
+                
+                <?php if($entity->city || $entity->region): ?>
                     <p class="text-sm text-slate-500 flex items-center gap-2 mb-2">
                         <i class="fas fa-map-marker-alt text-emerald-600"></i>
-                        @if($entity->region)
-                            {{ $entity->region->name }}
-                        @endif
-                        @if($entity->city && $entity->region)
+                        <?php if($entity->region): ?>
+                            <?php echo e($entity->region->name); ?>
+
+                        <?php endif; ?>
+                        <?php if($entity->city && $entity->region): ?>
                             , 
-                        @endif
-                        @if($entity->city)
-                            {{ $entity->city->name }}
-                        @endif
+                        <?php endif; ?>
+                        <?php if($entity->city): ?>
+                            <?php echo e($entity->city->name); ?>
+
+                        <?php endif; ?>
                     </p>
-                @endif
+                <?php endif; ?>
                 
-                @if($entity->address)
-                    <p class="text-sm text-slate-600 flex items-center gap-2"><i class="fas fa-location-dot text-emerald-600"></i> {{ Str::limit($entity->address, 60) }}</p>
-                @endif
+                <?php if($entity->address): ?>
+                    <p class="text-sm text-slate-600 flex items-center gap-2"><i class="fas fa-location-dot text-emerald-600"></i> <?php echo e(Str::limit($entity->address, 60)); ?></p>
+                <?php endif; ?>
                 
-                @if($entity->phone)
-                    <p class="text-sm text-slate-600 flex items-center gap-2 mt-2"><i class="fas fa-phone-alt text-emerald-600"></i> {{ $entity->phone }}</p>
-                @endif
+                <?php if($entity->phone): ?>
+                    <p class="text-sm text-slate-600 flex items-center gap-2 mt-2"><i class="fas fa-phone-alt text-emerald-600"></i> <?php echo e($entity->phone); ?></p>
+                <?php endif; ?>
                 
-                @if($entity->hotline)
-                    <p class="text-sm text-red-600 flex items-center gap-2 mt-1"><i class="fas fa-phone-alt"></i> طوارئ: {{ $entity->hotline }}</p>
-                @endif
+                <?php if($entity->hotline): ?>
+                    <p class="text-sm text-red-600 flex items-center gap-2 mt-1"><i class="fas fa-phone-alt"></i> طوارئ: <?php echo e($entity->hotline); ?></p>
+                <?php endif; ?>
             </a>
-            @empty
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <div class="col-span-full text-center py-12 bg-white rounded-2xl">
                 <i class="fas fa-building text-5xl text-slate-300 mb-3 block"></i>
                 <p class="text-slate-500">لا توجد نتائج مطابقة لمعايير البحث</p>
                 <p class="text-slate-400 text-sm mt-1">حاول تغيير معايير البحث أو كتابة اسم صحيح</p>
             </div>
-            @endforelse
+            <?php endif; ?>
         </div>
         
-        {{-- Pagination --}}
-        @if($entities->hasPages())
+        
+        <?php if($entities->hasPages()): ?>
             <div class="mt-8">
-                {{ $entities->appends(request()->query())->links() }}
+                <?php echo e($entities->appends(request()->query())->links()); ?>
+
             </div>
-        @endif
+        <?php endif; ?>
     </div>
 
-    {{-- JavaScript for regions dynamic loading --}}
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const citySelect = document.getElementById('city_id');
@@ -195,7 +198,7 @@
                     regionSelect.innerHTML = '<option value="">جاري تحميل المناطق...</option>';
                     regionSelect.disabled = true;
                     
-                    fetch(`{{ url('/official/get-regions') }}/${cityId}`)
+                    fetch(`<?php echo e(url('/official/get-regions')); ?>/${cityId}`)
                         .then(response => response.json())
                         .then(data => {
                             regionSelect.innerHTML = '<option value="">جميع المناطق</option>';
@@ -204,7 +207,7 @@
                                     const option = document.createElement('option');
                                     option.value = region.id;
                                     option.textContent = region.name;
-                                    if (option.value == '{{ request('region_id') }}') {
+                                    if (option.value == '<?php echo e(request('region_id')); ?>') {
                                         option.selected = true;
                                     }
                                     regionSelect.appendChild(option);
@@ -230,4 +233,4 @@
         });
     </script>
 </body>
-</html>
+</html><?php /**PATH /home/u316371041/domains/aza-international.com/public_html/dlil/resources/views/official/index.blade.php ENDPATH**/ ?>

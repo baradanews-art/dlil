@@ -1,24 +1,21 @@
 @extends('layouts.admin')
 
-@section('title', 'تعديل منشأة: ' . $business->title)
-@section('page_heading', '✏️ تعديل المنشأة')
-@section('page_subheading', 'تحديث بيانات: ' . $business->title)
+@section('title', 'إضافة منشأة جديدة')
+@section('page_heading', '➕ إضافة منشأة تجارية جديدة')
+@section('page_subheading', 'إضافة منشأة جديدة من لوحة التحكم')
 
 @push('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         #map-picker { height: 350px; width: 100%; border-radius: 16px; z-index: 1; }
-        .price-row { transition: all 0.2s ease; }
-        .price-row:hover { background-color: #f8fafc; }
     </style>
 @endpush
 
 @section('content')
 <div class="card">
     <div class="p-6">
-        <form action="{{ route('admin.businesses.update', $business->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <form action="{{ route('admin.businesses.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
-            @method('PUT')
             
             {{-- Status & Verification --}}
             <div class="bg-slate-50 rounded-xl p-5">
@@ -30,20 +27,20 @@
                     <div>
                         <label class="label">حالة الظهور</label>
                         <select name="status" class="input">
-                            <option value="approved" {{ $business->is_approved ? 'selected' : '' }}>✅ معتمدة ومنشورة</option>
-                            <option value="pending" {{ !$business->is_approved ? 'selected' : '' }}>⏳ معلقة بانتظار المراجعة</option>
+                            <option value="approved">✅ معتمدة ومنشورة</option>
+                            <option value="pending" selected>⏳ معلقة بانتظار المراجعة</option>
                         </select>
                     </div>
                     <div>
                         <label class="label">شارة التوثيق</label>
                         <select name="verification_type" class="input">
-                            <option value="none" {{ $business->verification_type == 'none' ? 'selected' : '' }}>⚪ غير موثق</option>
-                            <option value="verified" {{ $business->verification_type == 'verified' ? 'selected' : '' }}>🔵 موثق (Verified)</option>
-                            <option value="official" {{ $business->verification_type == 'official' ? 'selected' : '' }}>👑 رسمي (Official)</option>
+                            <option value="none" selected>⚪ غير موثق</option>
+                            <option value="verified">🔵 موثق (Verified)</option>
+                            <option value="official">👑 رسمي (Official)</option>
                         </select>
                     </div>
                     <div class="flex items-center gap-3 pt-6">
-                        <input type="checkbox" id="delivery_available" name="delivery_available" value="1" {{ $business->delivery_available ? 'checked' : '' }} class="w-5 h-5 text-emerald-600 rounded">
+                        <input type="checkbox" id="delivery_available" name="delivery_available" value="1" class="w-5 h-5 text-emerald-600 rounded">
                         <label for="delivery_available" class="text-sm font-bold text-slate-700 cursor-pointer">
                             <i class="fas fa-motorcycle ml-1"></i> تتوفر خدمة التوصيل
                         </label>
@@ -60,17 +57,18 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="label">اسم المنشأة *</label>
-                        <input type="text" name="title" value="{{ old('title', $business->title) }}" required class="input">
+                        <input type="text" name="title" value="{{ old('title') }}" required class="input">
                     </div>
                     <div>
                         <label class="label">رقم الهاتف *</label>
-                        <input type="text" name="phone" value="{{ old('phone', $business->phone) }}" required class="input" dir="ltr">
+                        <input type="text" name="phone" value="{{ old('phone') }}" required class="input" dir="ltr">
                     </div>
                     <div>
                         <label class="label">التصنيف *</label>
-                        <select name="category_id" class="input">
+                        <select name="category_id" class="input" required>
+                            <option value="">اختر التصنيف</option>
                             @foreach($categories as $category)
-                                <option value="{{ $category->id }}" {{ $business->category_id == $category->id ? 'selected' : '' }}>
+                                <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
                                     {{ $category->icon ?? '📁' }} {{ $category->name }}
                                 </option>
                             @endforeach
@@ -81,7 +79,7 @@
                         <select name="governorate_id" id="governorate-select" class="input" required>
                             <option value="">اختر المحافظة</option>
                             @foreach($governorates as $gov)
-                                <option value="{{ $gov->id }}" {{ $business->governorate_id == $gov->id ? 'selected' : '' }}>
+                                <option value="{{ $gov->id }}" {{ old('governorate_id') == $gov->id ? 'selected' : '' }}>
                                     {{ $gov->name }}
                                 </option>
                             @endforeach
@@ -89,24 +87,17 @@
                     </div>
                     <div>
                         <label class="label">المنطقة *</label>
-                        <select name="region_id" id="region-select" class="input" {{ $business->governorate_id ? '' : 'disabled' }}>
+                        <select name="region_id" id="region-select" class="input" disabled required>
                             <option value="">اختر المحافظة أولاً</option>
-                            @if($business->governorate_id)
-                                @foreach($regions as $region)
-                                    <option value="{{ $region->id }}" {{ $business->region_id == $region->id ? 'selected' : '' }}>
-                                        {{ $region->name }}
-                                    </option>
-                                @endforeach
-                            @endif
                         </select>
                     </div>
                     <div class="md:col-span-2">
                         <label class="label">العنوان بالتفصيل</label>
-                        <input type="text" name="address_detail" value="{{ old('address_detail', $business->address_detail) }}" class="input">
+                        <input type="text" name="address_detail" value="{{ old('address_detail') }}" class="input">
                     </div>
                     <div class="md:col-span-2">
                         <label class="label">وصف المنشأة *</label>
-                        <textarea name="description" rows="5" class="input">{{ old('description', $business->description) }}</textarea>
+                        <textarea name="description" rows="5" class="input" required>{{ old('description') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -120,47 +111,16 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="label">فيسبوك</label>
-                        <input type="url" name="facebook_url" value="{{ old('facebook_url', $business->facebook_url) }}" placeholder="https://facebook.com/..." class="input" dir="ltr">
+                        <input type="url" name="facebook_url" value="{{ old('facebook_url') }}" placeholder="https://facebook.com/..." class="input" dir="ltr">
                     </div>
                     <div>
                         <label class="label">انستغرام</label>
-                        <input type="url" name="instagram_url" value="{{ old('instagram_url', $business->instagram_url) }}" placeholder="https://instagram.com/..." class="input" dir="ltr">
+                        <input type="url" name="instagram_url" value="{{ old('instagram_url') }}" placeholder="https://instagram.com/..." class="input" dir="ltr">
                     </div>
                     <div>
                         <label class="label">خرائط جوجل</label>
-                        <input type="url" name="google_maps_url" value="{{ old('google_maps_url', $business->google_maps_url) }}" placeholder="https://maps.google.com/..." class="input" dir="ltr">
+                        <input type="url" name="google_maps_url" value="{{ old('google_maps_url') }}" placeholder="https://maps.google.com/..." class="input" dir="ltr">
                     </div>
-                </div>
-            </div>
-            
-            {{-- Price List --}}
-            <div class="bg-slate-50 rounded-xl p-5">
-                <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
-                    <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fas fa-dollar-sign text-emerald-600"></i>
-                        قائمة الأسعار
-                    </h3>
-                    <button type="button" id="add-price-row" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all">
-                        <i class="fas fa-plus ml-1"></i> إضافة خدمة جديدة
-                    </button>
-                </div>
-                
-                <div id="price-list-container" class="space-y-3">
-                    @php $priceList = is_array($business->price_list) ? $business->price_list : []; @endphp
-                    @forelse($priceList as $index => $item)
-                    <div class="flex gap-3 price-row items-center bg-white p-3 rounded-xl">
-                        <input type="text" name="price_list[{{ $index }}][name]" value="{{ $item['name'] ?? '' }}" placeholder="اسم الخدمة" class="flex-1 input !bg-white">
-                        <input type="text" name="price_list[{{ $index }}][price]" value="{{ $item['price'] ?? '' }}" placeholder="السعر (ل.س)" class="w-32 input !bg-white" dir="ltr">
-                        <button type="button" class="remove-row bg-red-500/20 hover:bg-red-500 text-red-600 hover:text-white px-3 py-2.5 rounded-lg transition-all">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                    @empty
-                    <div id="no-prices-alert" class="text-center py-8 text-slate-500 border border-dashed border-slate-300 rounded-xl">
-                        <i class="fas fa-box-open text-2xl mb-2 block"></i>
-                        لا توجد أسعار مدخلة. أضف خدمات ومنتجات المنشأة.
-                    </div>
-                    @endforelse
                 </div>
             </div>
             
@@ -172,26 +132,12 @@
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="label">اللوجو الحالي</label>
-                        <div class="mb-3">
-                            @if($business->logo)
-                                <img src="{{ asset('public/' . $business->logo) }}" class="w-20 h-20 rounded-xl object-cover border border-slate-200" loading="lazy">
-                            @else
-                                <div class="w-20 h-20 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-xs">لا يوجد</div>
-                            @endif
-                        </div>
+                        <label class="label">اللوجو</label>
                         <input type="file" name="logo" accept="image/*" class="input !p-2">
                         <p class="text-[10px] text-slate-400 mt-1">JPG, PNG (max 2MB)</p>
                     </div>
                     <div>
-                        <label class="label">صورة الغلاف الحالية</label>
-                        <div class="mb-3">
-                            @if($business->cover)
-                                <img src="{{ asset('public/' . $business->cover) }}" class="w-full h-24 rounded-xl object-cover border border-slate-200" loading="lazy">
-                            @else
-                                <div class="w-full h-24 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-xs">لا يوجد</div>
-                            @endif
-                        </div>
+                        <label class="label">صورة الغلاف</label>
                         <input type="file" name="cover" accept="image/*" class="input !p-2">
                         <p class="text-[10px] text-slate-400 mt-1">JPG, PNG (max 3MB)</p>
                     </div>
@@ -208,11 +154,11 @@
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <div>
                         <label class="label">خط العرض (Latitude)</label>
-                        <input type="text" name="latitude" id="lat-input" readonly value="{{ old('latitude', $business->latitude ?? '33.5138') }}" class="input bg-slate-100 font-mono">
+                        <input type="text" name="latitude" id="lat-input" readonly value="{{ old('latitude', '33.5138') }}" class="input bg-slate-100 font-mono">
                     </div>
                     <div>
                         <label class="label">خط الطول (Longitude)</label>
-                        <input type="text" name="longitude" id="lng-input" readonly value="{{ old('longitude', $business->longitude ?? '36.2765') }}" class="input bg-slate-100 font-mono">
+                        <input type="text" name="longitude" id="lng-input" readonly value="{{ old('longitude', '36.2765') }}" class="input bg-slate-100 font-mono">
                     </div>
                 </div>
             </div>
@@ -220,7 +166,7 @@
             {{-- Submit Buttons --}}
             <div class="flex gap-4">
                 <button type="submit" class="btn-primary flex-1 py-3">
-                    <i class="fas fa-save ml-2"></i> حفظ التغييرات
+                    <i class="fas fa-save ml-2"></i> إضافة المنشأة
                 </button>
                 <a href="{{ route('admin.businesses.index') }}" class="btn-secondary flex-1 py-3 text-center">
                     <i class="fas fa-times ml-2"></i> إلغاء
@@ -237,7 +183,6 @@
         // ========== المحافظة والمنطقة ==========
         const govSelect = document.getElementById('governorate-select');
         const regionSelect = document.getElementById('region-select');
-        const currentRegionId = '{{ $business->region_id }}';
 
         if (!govSelect || !regionSelect) {
             console.error('❌ عناصر المحافظة أو المنطقة غير موجودة!');
@@ -255,7 +200,6 @@
             regionSelect.disabled = true;
 
             const url = `/dlil/get-regions/${governorateId}`;
-            console.log('📡 جاري تحميل المناطق من:', url);
 
             fetch(url, {
                 headers: {
@@ -270,8 +214,6 @@
                 return response.json();
             })
             .then(data => {
-                console.log('✅ تم استلام البيانات:', data);
-                
                 regionSelect.innerHTML = '<option value="">اختر المنطقة</option>';
                 
                 if (data && Array.isArray(data) && data.length > 0) {
@@ -299,14 +241,8 @@
 
         govSelect.addEventListener('change', function() {
             const governorateId = this.value;
-            console.log('🔄 تغيير المحافظة إلى:', governorateId);
             loadRegions(governorateId);
         });
-
-        if (govSelect.value) {
-            console.log('🔄 تحميل المناطق الأولية للمحافظة:', govSelect.value);
-            loadRegions(govSelect.value, currentRegionId);
-        }
 
         // ========== الخريطة ==========
         let latInput = document.getElementById('lat-input');
@@ -328,32 +264,6 @@
         
         marker.on('dragend', (e) => { let c = marker.getLatLng(); updateCoords(c.lat, c.lng); });
         map.on('click', (e) => { marker.setLatLng(e.latlng); updateCoords(e.latlng.lat, e.latlng.lng); });
-        
-        // ========== قائمة الأسعار ==========
-        let priceIndex = {{ count($priceList ?? []) }};
-        const container = document.getElementById('price-list-container');
-        const addBtn = document.getElementById('add-price-row');
-        const noPricesAlert = document.getElementById('no-prices-alert');
-        
-        if (addBtn) {
-            addBtn.addEventListener('click', () => {
-                if (noPricesAlert) noPricesAlert.style.display = 'none';
-                const row = document.createElement('div');
-                row.className = 'flex gap-3 price-row items-center bg-white p-3 rounded-xl';
-                row.innerHTML = `
-                    <input type="text" name="price_list[${priceIndex}][name]" placeholder="اسم الخدمة" class="flex-1 input !bg-white">
-                    <input type="text" name="price_list[${priceIndex}][price]" placeholder="السعر (ل.س)" class="w-32 input !bg-white" dir="ltr">
-                    <button type="button" class="remove-row bg-red-500/20 hover:bg-red-500 text-red-600 hover:text-white px-3 py-2.5 rounded-lg transition-all"><i class="fas fa-trash"></i></button>
-                `;
-                container.appendChild(row);
-                priceIndex++;
-            });
-        }
-        
-        container.addEventListener('click', (e) => {
-            if (e.target.closest('.remove-row')) e.target.closest('.price-row')?.remove();
-            if (container.children.length === 0 && noPricesAlert) noPricesAlert.style.display = 'block';
-        });
     });
 </script>
 @endpush

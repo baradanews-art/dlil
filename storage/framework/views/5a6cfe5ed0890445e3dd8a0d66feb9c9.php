@@ -1,32 +1,33 @@
-@extends('layouts.app')
 
-@section('seo')
-    @php
+
+<?php $__env->startSection('seo'); ?>
+    <?php
         if (!isset($seo)) {
             $seo = app(\App\Helpers\SeoHelper::class);
         }
         $seo->setTitle(\App\Models\Setting::get('site_name', 'دليل سوريا التجاري'))
             ->setDescription(\App\Models\Setting::get('site_description', 'دليلك الشامل للأعمال في سوريا ومحيطها'));
-    @endphp
-    {!! $seo->render() !!}
+    ?>
+    <?php echo $seo->render(); ?>
+
     
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "{{ \App\Models\Setting::get('site_name', 'دليل سوريا التجاري') }}",
-      "url": "{{ url('/') }}",
+      "name": "<?php echo e(\App\Models\Setting::get('site_name', 'دليل سوريا التجاري')); ?>",
+      "url": "<?php echo e(url('/')); ?>",
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "{{ route('search') }}?search={search_term_string}",
+        "target": "<?php echo e(route('search')); ?>?search={search_term_string}",
         "query-input": "required name=search_term_string"
       }
     }
     </script>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('content')
-{{-- ========== 1. HERO SECTION ========== --}}
+<?php $__env->startSection('content'); ?>
+
 <section class="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 min-h-[600px] flex items-center dark:from-black dark:to-slate-950">
     <div class="absolute inset-0 opacity-20 pointer-events-none">
         <div class="absolute top-20 right-10 w-80 h-80 bg-emerald-500 rounded-full filter blur-[100px] animate-pulse"></div>
@@ -43,15 +44,17 @@
         </div>
         
         <h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-tight">
-            {{ \App\Models\Setting::get('hero_title', 'دليلك الشامل للأعمال في سوريا') }}
+            <?php echo e(\App\Models\Setting::get('hero_title', 'دليلك الشامل للأعمال في سوريا')); ?>
+
         </h1>
         
         <p class="mt-6 text-base md:text-xl text-slate-300 max-w-3xl mx-auto font-medium">
-            {{ \App\Models\Setting::get('hero_subtitle', 'أكبر دليل إلكتروني يضم آلاف المنشآت التجارية والخدمية مع تقييمات حقيقية') }}
+            <?php echo e(\App\Models\Setting::get('hero_subtitle', 'أكبر دليل إلكتروني يضم آلاف المنشآت التجارية والخدمية مع تقييمات حقيقية')); ?>
+
         </p>
         
         <div class="mt-12 max-w-4xl mx-auto bg-white/10 backdrop-blur-xl p-3 rounded-3xl border border-white/10 shadow-2xl">
-            <form action="{{ route('search') }}" method="GET" class="flex flex-col md:flex-row gap-2">
+            <form action="<?php echo e(route('search')); ?>" method="GET" class="flex flex-col md:flex-row gap-2">
                 <div class="relative flex-1">
                     <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input type="text" name="search" placeholder="اسم المنشأة، الخدمة، الكلمة الدلالية..." class="w-full bg-white dark:bg-slate-900 border-0 rounded-2xl py-4 pr-12 pl-4 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 transition-all font-medium">
@@ -60,9 +63,9 @@
                     <i class="fas fa-map-marker-alt absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <select name="location" class="w-full bg-white dark:bg-slate-900 border-0 rounded-2xl py-4 pr-11 pl-4 text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 appearance-none font-medium">
                         <option value="">كل المحافظات</option>
-                        @foreach($governorates ?? [] as $gov)
-                            <option value="{{ $gov->slug }}">{{ $gov->name }}</option>
-                        @endforeach
+                        <?php $__currentLoopData = $governorates ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $gov): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($gov->slug); ?>"><?php echo e($gov->name); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
                 </div>
                 <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 py-4 rounded-2xl transition-all duration-300 shadow-lg shadow-emerald-600/30 hover:scale-[1.02]">
@@ -72,7 +75,7 @@
         </div>
 
         <div class="mt-8 flex flex-wrap gap-4 justify-center">
-            <a href="{{ route('business.create') }}" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-6 py-3.5 rounded-xl transition-all shadow-md">
+            <a href="<?php echo e(route('business.create')); ?>" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-6 py-3.5 rounded-xl transition-all shadow-md">
                 <i class="fas fa-plus-circle"></i> أضف منشأتك مجاناً
             </a>
             <a href="#businesses" class="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white font-bold text-sm px-6 py-3.5 rounded-xl border border-white/10 transition-all">
@@ -88,10 +91,10 @@
     </div>
 </section>
 
-{{-- ========== 2. OFFICIAL SERVICES CARDS ========== --}}
+
 <section class="max-w-7xl mx-auto px-4 -mt-16 relative z-20">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <a href="{{ route('official.government') }}" class="group relative overflow-hidden rounded-2xl shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+        <a href="<?php echo e(route('official.government')); ?>" class="group relative overflow-hidden rounded-2xl shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl">
             <div class="absolute inset-0 bg-gradient-to-br from-green-700 to-green-800"></div>
             <div class="relative p-8 text-center text-white z-10">
                 <div class="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"><i class="fas fa-landmark text-3xl"></i></div>
@@ -100,7 +103,7 @@
                 <div class="mt-4 inline-flex items-center gap-2 text-sm bg-white/20 rounded-full px-4 py-1.5 group-hover:bg-white/30">استعرض <i class="fas fa-arrow-left text-xs"></i></div>
             </div>
         </a>
-        <a href="{{ route('official.security') }}" class="group relative overflow-hidden rounded-2xl shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+        <a href="<?php echo e(route('official.security')); ?>" class="group relative overflow-hidden rounded-2xl shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl">
             <div class="absolute inset-0 bg-gradient-to-br from-red-700 to-red-800"></div>
             <div class="relative p-8 text-center text-white z-10">
                 <div class="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"><i class="fas fa-shield-alt text-3xl"></i></div>
@@ -109,7 +112,7 @@
                 <div class="mt-4 inline-flex items-center gap-2 text-sm bg-white/20 rounded-full px-4 py-1.5 group-hover:bg-white/30">استعرض <i class="fas fa-arrow-left text-xs"></i></div>
             </div>
         </a>
-        <a href="{{ route('official.help') }}" class="group relative overflow-hidden rounded-2xl shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+        <a href="<?php echo e(route('official.help')); ?>" class="group relative overflow-hidden rounded-2xl shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl">
             <div class="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-800"></div>
             <div class="relative p-8 text-center text-white z-10">
                 <div class="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"><i class="fas fa-hand-holding-heart text-3xl"></i></div>
@@ -121,8 +124,8 @@
     </div>
 </section>
 
-{{-- ========== 3. OFFICIAL & VERIFIED BUSINESSES ========== --}}
-@if(isset($officialBusinesses) && count($officialBusinesses) > 0)
+
+<?php if(isset($officialBusinesses) && count($officialBusinesses) > 0): ?>
 <section class="max-w-7xl mx-auto px-4 py-16 bg-slate-50 dark:bg-slate-900 rounded-3xl my-8 shadow-sm">
     <div class="flex justify-between items-end mb-10">
         <div>
@@ -132,43 +135,43 @@
             </h2>
             <p class="text-slate-500 dark:text-slate-400 text-sm mt-2">شركاء وجهات معتمدة وموثوقة بالكامل</p>
         </div>
-        <a href="{{ route('search', ['verified' => 1]) }}" class="text-emerald-600 dark:text-emerald-400 text-sm font-bold hover:underline flex items-center gap-1">عرض الكل <i class="fas fa-arrow-left"></i></a>
+        <a href="<?php echo e(route('search', ['verified' => 1])); ?>" class="text-emerald-600 dark:text-emerald-400 text-sm font-bold hover:underline flex items-center gap-1">عرض الكل <i class="fas fa-arrow-left"></i></a>
     </div>
     
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        @foreach($officialBusinesses as $bus)
+        <?php $__currentLoopData = $officialBusinesses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bus): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
         <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700/50 overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
             <div class="relative h-44 overflow-hidden bg-slate-100">
-                <img src="{{ asset('public/' . $bus->cover) }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" alt="{{ $bus->title }}" onerror="this.src='https://placehold.co/1200x400/0f172a/10b981?text=🏪'">
+                <img src="<?php echo e(asset('public/' . $bus->cover)); ?>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" alt="<?php echo e($bus->title); ?>" onerror="this.src='https://placehold.co/1200x400/0f172a/10b981?text=🏪'">
                 <div class="absolute top-3 left-3">
-                    @if($bus->verification_type == 'official')
+                    <?php if($bus->verification_type == 'official'): ?>
                         <span class="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[11px] font-black px-3 py-1 rounded-xl shadow-md flex items-center gap-1"><i class="fas fa-award"></i> رسمي</span>
-                    @else
+                    <?php else: ?>
                         <span class="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-[11px] font-black px-3 py-1 rounded-xl shadow-md flex items-center gap-1"><i class="fas fa-check-circle"></i> موثق</span>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
             <div class="p-5 flex-1 flex flex-col justify-between">
                 <div>
-                    <h3 class="font-bold text-slate-800 dark:text-white group-hover:text-emerald-600 transition-colors line-clamp-1 text-base">{{ $bus->title }}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1"><i class="fas fa-map-marker-alt text-slate-400"></i> {{ $bus->governorate->name ?? 'سوريا' }} @if($bus->region) - {{ $bus->region->name }} @endif</p>
+                    <h3 class="font-bold text-slate-800 dark:text-white group-hover:text-emerald-600 transition-colors line-clamp-1 text-base"><?php echo e($bus->title); ?></h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1"><i class="fas fa-map-marker-alt text-slate-400"></i> <?php echo e($bus->governorate->name ?? 'سوريا'); ?> <?php if($bus->region): ?> - <?php echo e($bus->region->name); ?> <?php endif; ?></p>
                 </div>
                 <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/60 flex justify-between items-center">
                     <div class="text-amber-400 text-xs flex gap-0.5">
-                        @for($i=1;$i<=5;$i++)
-                            <i class="fas fa-star{{ $i <= $bus->reviews_avg_rating ? '' : '-o' }}"></i>
-                        @endfor
+                        <?php for($i=1;$i<=5;$i++): ?>
+                            <i class="fas fa-star<?php echo e($i <= $bus->reviews_avg_rating ? '' : '-o'); ?>"></i>
+                        <?php endfor; ?>
                     </div>
-                    <a href="{{ route('business.show', $bus->slug) }}" class="inline-flex items-center gap-1 bg-slate-50 dark:bg-slate-700 px-3 py-1.5 rounded-xl text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all">تفاصيل <i class="fas fa-chevron-left text-[9px]"></i></a>
+                    <a href="<?php echo e(route('business.show', $bus->slug)); ?>" class="inline-flex items-center gap-1 bg-slate-50 dark:bg-slate-700 px-3 py-1.5 rounded-xl text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all">تفاصيل <i class="fas fa-chevron-left text-[9px]"></i></a>
                 </div>
             </div>
         </div>
-        @endforeach
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     </div>
 </section>
-@endif
+<?php endif; ?>
 
-{{-- ========== 4. LATEST BUSINESSES ========== --}}
+
 <section id="businesses" class="max-w-7xl mx-auto px-4 py-12">
     <div class="flex justify-between items-end mb-8">
         <div>
@@ -178,58 +181,58 @@
             </h2>
             <p class="text-slate-500 dark:text-slate-400 text-sm mt-2">انضموا إلينا حديثاً في الدليل</p>
         </div>
-        <a href="{{ route('search') }}" class="text-emerald-600 text-sm font-bold hover:underline">عرض الكل <i class="fas fa-arrow-left mr-1"></i></a>
+        <a href="<?php echo e(route('search')); ?>" class="text-emerald-600 text-sm font-bold hover:underline">عرض الكل <i class="fas fa-arrow-left mr-1"></i></a>
     </div>
     
     <div id="businesses-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        @foreach($featuredBusinesses as $bus)
+        <?php $__currentLoopData = $featuredBusinesses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bus): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
         <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700/40 overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
             <div class="relative h-48 overflow-hidden bg-slate-100">
-                <img src="{{ asset('public/' . $bus->cover) }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" alt="{{ $bus->title }}" onerror="this.src='https://placehold.co/1200x400/0f172a/10b981?text=🏪'">
-                @if(isset($bus->delivery_available) && $bus->delivery_available)
+                <img src="<?php echo e(asset('public/' . $bus->cover)); ?>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" alt="<?php echo e($bus->title); ?>" onerror="this.src='https://placehold.co/1200x400/0f172a/10b981?text=🏪'">
+                <?php if(isset($bus->delivery_available) && $bus->delivery_available): ?>
                     <span class="absolute bottom-3 left-3 bg-emerald-500 text-white text-[10px] font-black px-2.5 py-1 rounded-xl shadow-sm">🛵 توصيل متاح</span>
-                @endif
+                <?php endif; ?>
             </div>
             <div class="p-5 flex-1 flex flex-col justify-between">
                 <div>
                     <div class="flex items-start gap-3">
-                        <img src="{{ asset('public/' . $bus->logo) }}" class="w-11 h-11 rounded-xl object-cover border border-slate-100 dark:border-slate-700 shadow-inner bg-white" alt="{{ $bus->title }}" loading="lazy" onerror="this.src='https://placehold.co/200x200/1e293b/10b981?text=🏪'">
+                        <img src="<?php echo e(asset('public/' . $bus->logo)); ?>" class="w-11 h-11 rounded-xl object-cover border border-slate-100 dark:border-slate-700 shadow-inner bg-white" alt="<?php echo e($bus->title); ?>" loading="lazy" onerror="this.src='https://placehold.co/200x200/1e293b/10b981?text=🏪'">
                         <div class="flex-1 overflow-hidden">
-                            <h3 class="font-bold text-slate-800 dark:text-white line-clamp-1 group-hover:text-emerald-600 transition-colors text-base">{{ $bus->title }}</h3>
-                            <p class="text-xs text-slate-500 mt-0.5 flex items-center gap-1"><i class="fas fa-folder text-slate-300"></i> {{ $bus->category->name ?? 'عام' }}</p>
+                            <h3 class="font-bold text-slate-800 dark:text-white line-clamp-1 group-hover:text-emerald-600 transition-colors text-base"><?php echo e($bus->title); ?></h3>
+                            <p class="text-xs text-slate-500 mt-0.5 flex items-center gap-1"><i class="fas fa-folder text-slate-300"></i> <?php echo e($bus->category->name ?? 'عام'); ?></p>
                         </div>
                     </div>
-                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-3.5 line-clamp-2 leading-relaxed">{{ Str::limit($bus->description, 75) }}</p>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-3.5 line-clamp-2 leading-relaxed"><?php echo e(Str::limit($bus->description, 75)); ?></p>
                 </div>
                 
                 <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700/60 flex justify-between items-center">
                     <div class="text-amber-400 text-xs flex gap-0.5">
-                        @for($i=1;$i<=5;$i++)
-                            <i class="fas fa-star{{ $i <= $bus->reviews_avg_rating ? '' : '-o' }}"></i>
-                        @endfor
+                        <?php for($i=1;$i<=5;$i++): ?>
+                            <i class="fas fa-star<?php echo e($i <= $bus->reviews_avg_rating ? '' : '-o'); ?>"></i>
+                        <?php endfor; ?>
                     </div>
-                    <a href="{{ route('business.show', $bus->slug) }}" class="text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:underline flex items-center gap-0.5">التفاصيل <i class="fas fa-chevron-left text-[9px]"></i></a>
+                    <a href="<?php echo e(route('business.show', $bus->slug)); ?>" class="text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:underline flex items-center gap-0.5">التفاصيل <i class="fas fa-chevron-left text-[9px]"></i></a>
                 </div>
             </div>
         </div>
-        @endforeach
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     </div>
     
     <div id="loading-spinner" class="hidden justify-center my-6">
         <div class="animate-spin rounded-full h-10 w-10 border-4 border-emerald-500 border-t-transparent"></div>
     </div>
 
-    @if($featuredBusinesses->hasMorePages())
+    <?php if($featuredBusinesses->hasMorePages()): ?>
     <div class="text-center mt-12">
         <button id="load-more" type="button" class="inline-flex items-center gap-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white hover:border-emerald-600 hover:text-emerald-600 font-bold px-8 py-3.5 rounded-2xl transition-all shadow-sm">
             <i class="fas fa-sync-alt"></i> اكتشف المزيد من المنشآت
         </button>
     </div>
-    @endif
+    <?php endif; ?>
 </section>
 
-{{-- ========== 5. TOP RATED BUSINESSES ========== --}}
-@if(isset($topRatedBusinesses) && count($topRatedBusinesses) > 0)
+
+<?php if(isset($topRatedBusinesses) && count($topRatedBusinesses) > 0): ?>
 <section class="bg-slate-100 dark:bg-slate-900/50 py-16 my-8">
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -248,37 +251,37 @@
         
         <div class="swiper trending-swiper overflow-hidden px-1">
             <div class="swiper-wrapper">
-                @foreach($topRatedBusinesses as $bus)
+                <?php $__currentLoopData = $topRatedBusinesses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bus): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <div class="swiper-slide">
                     <div class="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700/40 group flex flex-col justify-between h-full">
                         <div class="relative h-48 overflow-hidden">
-                            <img src="{{ asset('public/' . $bus->cover) }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" alt="{{ $bus->title }}" onerror="this.src='https://placehold.co/1200x400/0f172a/10b981?text=🏪'">
+                            <img src="<?php echo e(asset('public/' . $bus->cover)); ?>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" alt="<?php echo e($bus->title); ?>" onerror="this.src='https://placehold.co/1200x400/0f172a/10b981?text=🏪'">
                             <div class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md rounded-xl px-2.5 py-1 flex items-center gap-1.5">
                                 <i class="fas fa-star text-amber-400 text-xs"></i> 
-                                <span class="text-white text-xs font-black">{{ number_format($bus->reviews_avg_rating, 1) }}</span>
+                                <span class="text-white text-xs font-black"><?php echo e(number_format($bus->reviews_avg_rating, 1)); ?></span>
                             </div>
                         </div>
                         <div class="p-5 flex-1 flex flex-col justify-between">
                             <div>
-                                <h3 class="font-bold text-slate-800 dark:text-white text-base line-clamp-1 group-hover:text-emerald-600 transition-colors">{{ $bus->title }}</h3>
-                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">{{ Str::limit($bus->description, 80) }}</p>
+                                <h3 class="font-bold text-slate-800 dark:text-white text-base line-clamp-1 group-hover:text-emerald-600 transition-colors"><?php echo e($bus->title); ?></h3>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 line-clamp-2"><?php echo e(Str::limit($bus->description, 80)); ?></p>
                             </div>
                             <div class="flex justify-between items-center mt-5 pt-4 border-t border-slate-100 dark:border-slate-700/60">
-                                <span class="text-xs text-slate-500 flex items-center gap-1"><i class="fas fa-map-marker-alt"></i> {{ $bus->governorate->name ?? 'سوريا' }} @if($bus->region) - {{ $bus->region->name }} @endif</span>
-                                <a href="{{ route('business.show', $bus->slug) }}" class="text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:underline">تفاصيل <i class="fas fa-arrow-left mr-1"></i></a>
+                                <span class="text-xs text-slate-500 flex items-center gap-1"><i class="fas fa-map-marker-alt"></i> <?php echo e($bus->governorate->name ?? 'سوريا'); ?> <?php if($bus->region): ?> - <?php echo e($bus->region->name); ?> <?php endif; ?></span>
+                                <a href="<?php echo e(route('business.show', $bus->slug)); ?>" class="text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:underline">تفاصيل <i class="fas fa-arrow-left mr-1"></i></a>
                             </div>
                         </div>
                     </div>
                 </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
         </div>
     </div>
 </section>
-@endif
+<?php endif; ?>
 
-{{-- ========== 6. RECOMMENDATIONS ========== --}}
-@if(isset($recommendedBusinesses) && count($recommendedBusinesses) > 0)
+
+<?php if(isset($recommendedBusinesses) && count($recommendedBusinesses) > 0): ?>
 <section class="max-w-7xl mx-auto px-4 py-12">
     <div class="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 rounded-3xl p-6 md:p-10 shadow-xl relative overflow-hidden">
         <div class="absolute inset-0 opacity-10 pointer-events-none">
@@ -299,30 +302,30 @@
         
         <div class="swiper rec-swiper overflow-hidden relative z-10">
             <div class="swiper-wrapper">
-                @foreach($recommendedBusinesses as $bus)
+                <?php $__currentLoopData = $recommendedBusinesses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bus): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <div class="swiper-slide">
-                    <a href="{{ route('business.show', $bus->slug) }}" class="block bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all hover:scale-[1.01]">
+                    <a href="<?php echo e(route('business.show', $bus->slug)); ?>" class="block bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all hover:scale-[1.01]">
                         <div class="flex items-center gap-4">
-                            <img src="{{ asset('public/' . $bus->logo) }}" class="w-16 h-16 rounded-xl object-cover border border-slate-100 bg-slate-50" loading="lazy" onerror="this.src='https://placehold.co/200x200/1e293b/10b981?text=🏪'">
+                            <img src="<?php echo e(asset('public/' . $bus->logo)); ?>" class="w-16 h-16 rounded-xl object-cover border border-slate-100 bg-slate-50" loading="lazy" onerror="this.src='https://placehold.co/200x200/1e293b/10b981?text=🏪'">
                             <div class="overflow-hidden flex-1">
-                                <h3 class="font-bold text-slate-900 dark:text-white text-sm truncate">{{ $bus->title }}</h3>
-                                <p class="text-xs text-slate-500 mt-1 truncate">{{ $bus->category->name ?? 'تصنيف عام' }}</p>
+                                <h3 class="font-bold text-slate-900 dark:text-white text-sm truncate"><?php echo e($bus->title); ?></h3>
+                                <p class="text-xs text-slate-500 mt-1 truncate"><?php echo e($bus->category->name ?? 'تصنيف عام'); ?></p>
                                 <div class="text-amber-400 text-[11px] mt-1.5 flex gap-0.5">
-                                    @for($i=1;$i<=5;$i++)<i class="fas fa-star{{ $i <= ($bus->reviews_avg_rating ?? 0) ? '' : '-o' }}"></i>@endfor
+                                    <?php for($i=1;$i<=5;$i++): ?><i class="fas fa-star<?php echo e($i <= ($bus->reviews_avg_rating ?? 0) ? '' : '-o'); ?>"></i><?php endfor; ?>
                                 </div>
                             </div>
                         </div>
                     </a>
                 </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
         </div>
     </div>
 </section>
-@endif
+<?php endif; ?>
 
-{{-- ========== 7. LATEST REVIEWS ========== --}}
-@if(isset($latestReviews) && count($latestReviews) > 0)
+
+<?php if(isset($latestReviews) && count($latestReviews) > 0): ?>
 <section class="bg-slate-950 py-16 my-8 relative overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 relative z-10">
         <div class="text-center mb-12">
@@ -334,59 +337,60 @@
         
         <div class="swiper reviews-swiper overflow-hidden">
             <div class="swiper-wrapper">
-                @foreach($latestReviews as $review)
+                <?php $__currentLoopData = $latestReviews; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $review): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <div class="swiper-slide">
                     <div class="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/5 h-full flex flex-col justify-between">
                         <div>
                             <div class="flex items-center gap-3 mb-4">
                                 <div class="w-10 h-10 bg-emerald-600/20 text-emerald-400 rounded-full flex items-center justify-center font-bold text-sm">
-                                    {{ Str::substr($review->reviewer_name ?? 'ز', 0, 1) }}
+                                    <?php echo e(Str::substr($review->reviewer_name ?? 'ز', 0, 1)); ?>
+
                                 </div>
                                 <div>
-                                    <div class="font-bold text-white text-sm">{{ $review->reviewer_name ?? 'زائر' }}</div>
+                                    <div class="font-bold text-white text-sm"><?php echo e($review->reviewer_name ?? 'زائر'); ?></div>
                                     <div class="text-amber-400 text-[10px] mt-0.5 flex gap-0.5">
-                                        @for($i=1;$i<=5;$i++)
-                                            <i class="fas fa-star {{ $i <= $review->rating ? 'text-amber-400' : 'text-white/20' }}"></i>
-                                        @endfor
+                                        <?php for($i=1;$i<=5;$i++): ?>
+                                            <i class="fas fa-star <?php echo e($i <= $review->rating ? 'text-amber-400' : 'text-white/20'); ?>"></i>
+                                        <?php endfor; ?>
                                     </div>
                                 </div>
                             </div>
-                            <p class="text-slate-300 text-sm leading-relaxed italic">" {{ Str::limit($review->comment, 120) }} "</p>
+                            <p class="text-slate-300 text-sm leading-relaxed italic">" <?php echo e(Str::limit($review->comment, 120)); ?> "</p>
                         </div>
                         <div class="mt-4 pt-4 border-t border-white/5 text-[11px] text-slate-500 flex justify-between items-center">
-                            <span>{{ $review->created_at ? $review->created_at->diffForHumans() : '' }}</span>
-                            <a href="{{ route('business.show', $review->business->slug ?? '#') }}" class="text-emerald-400 hover:underline truncate max-w-[150px]">@ <span class="font-bold">{{ $review->business->title ?? '' }}</span></a>
+                            <span><?php echo e($review->created_at ? $review->created_at->diffForHumans() : ''); ?></span>
+                            <a href="<?php echo e(route('business.show', $review->business->slug ?? '#')); ?>" class="text-emerald-400 hover:underline truncate max-w-[150px]">@ <span class="font-bold"><?php echo e($review->business->title ?? ''); ?></span></a>
                         </div>
                     </div>
                 </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
             <div class="swiper-pagination !static mt-8"></div>
         </div>
     </div>
 </section>
-@endif
+<?php endif; ?>
 
-{{-- ========== 8. STATS SECTION ========== --}}
+
 <section class="max-w-7xl mx-auto px-4 py-12">
     <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm p-8 border border-slate-100 dark:border-slate-700/50">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div class="stat-item" data-count="{{ $stats['total'] ?? 0 }}">
+            <div class="stat-item" data-count="<?php echo e($stats['total'] ?? 0); ?>">
                 <div class="w-14 h-14 bg-emerald-500/10 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl"><i class="fas fa-store"></i></div>
                 <div class="stat-number text-2xl md:text-3xl font-black text-slate-800 dark:text-white">0</div>
                 <div class="text-xs text-slate-500 mt-1.5 font-medium">منشأة تجارية</div>
             </div>
-            <div class="stat-item" data-count="{{ $stats['categories'] ?? 0 }}">
+            <div class="stat-item" data-count="<?php echo e($stats['categories'] ?? 0); ?>">
                 <div class="w-14 h-14 bg-blue-500/10 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl"><i class="fas fa-th-large"></i></div>
                 <div class="stat-number text-2xl md:text-3xl font-black text-slate-800 dark:text-white">0</div>
                 <div class="text-xs text-slate-500 mt-1.5 font-medium">تصنيف خدمي</div>
             </div>
-            <div class="stat-item" data-count="{{ $stats['reviews'] ?? 0 }}">
+            <div class="stat-item" data-count="<?php echo e($stats['reviews'] ?? 0); ?>">
                 <div class="w-14 h-14 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl"><i class="fas fa-star"></i></div>
                 <div class="stat-number text-2xl md:text-3xl font-black text-slate-800 dark:text-white">0</div>
                 <div class="text-xs text-slate-500 mt-1.5 font-medium">تقييم حقيقي</div>
             </div>
-            <div class="stat-item" data-count="{{ $stats['government_entities'] ?? 0 }}">
+            <div class="stat-item" data-count="<?php echo e($stats['government_entities'] ?? 0); ?>">
                 <div class="w-14 h-14 bg-green-500/10 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl"><i class="fas fa-landmark"></i></div>
                 <div class="stat-number text-2xl md:text-3xl font-black text-slate-800 dark:text-white">0</div>
                 <div class="text-xs text-slate-500 mt-1.5 font-medium">مؤسسة رسمية</div>
@@ -395,7 +399,7 @@
     </div>
 </section>
 
-{{-- ========== 9. ENGAGEMENT SECTION ========== --}}
+
 <section class="max-w-7xl mx-auto px-4 py-12">
     <div class="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-slate-800/50 rounded-3xl p-8 text-center border border-emerald-100 dark:border-emerald-800/30">
         <i class="fas fa-heart text-emerald-500 text-4xl mb-3 block"></i>
@@ -405,16 +409,16 @@
             <a href="#businesses" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-md">
                 <i class="fas fa-star ml-2"></i> قيم منشأة
             </a>
-            <a href="{{ route('business.create') }}" class="bg-white dark:bg-slate-700 border-2 border-emerald-600 text-emerald-600 dark:text-white hover:bg-emerald-50 dark:hover:bg-slate-600 font-bold px-6 py-3 rounded-xl transition-all">
+            <a href="<?php echo e(route('business.create')); ?>" class="bg-white dark:bg-slate-700 border-2 border-emerald-600 text-emerald-600 dark:text-white hover:bg-emerald-50 dark:hover:bg-slate-600 font-bold px-6 py-3 rounded-xl transition-all">
                 <i class="fas fa-plus-circle ml-2"></i> أضف منشأتك
             </a>
         </div>
         <p class="text-xs text-slate-400 mt-6">تقييماتك تساعد آلاف المستخدمين في اختيار أفضل الخدمات</p>
     </div>
 </section>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -532,4 +536,5 @@
         localStorage.setItem('saved_businesses', JSON.stringify(bookmarks));
     }
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /home/u316371041/domains/aza-international.com/public_html/dlil/resources/views/index.blade.php ENDPATH**/ ?>

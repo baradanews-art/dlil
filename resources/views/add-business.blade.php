@@ -12,6 +12,7 @@
     
     <style>
         #map-picker { height: 350px; width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; z-index: 1; }
+        .error-feedback { color: #dc2626; font-size: 11px; margin-top: 4px; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen text-slate-800 font-sans antialiased">
@@ -40,28 +41,75 @@
                 </div>
             @endif
 
-            <form action="{{ route('business.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+            <form action="{{ route('business.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6" id="businessForm">
                 @csrf
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-bold text-slate-700 mb-1.5">اسم المنشأة التجارية *</label><input type="text" name="title" value="{{ old('title') }}" required placeholder="مثال: سوبرماركت الخير، مطعم الياسمين..." class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500 font-medium"></div>
-                    <div><label class="block text-xs font-bold text-slate-700 mb-1.5">رقم هاتف التواصل *</label><input type="text" name="phone" value="{{ old('phone') }}" required placeholder="مثال: 0912345678 أو 011xxxxxx" class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500 font-mono font-medium"></div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">اسم المنشأة التجارية *</label>
+                        <input type="text" name="title" value="{{ old('title') }}" required placeholder="مثال: سوبرماركت الخير، مطعم الياسمين..." class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">رقم هاتف التواصل *</label>
+                        <input type="text" name="phone" value="{{ old('phone') }}" required placeholder="مثال: 0912345678 أو 011xxxxxx" class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500 font-mono font-medium">
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div><label class="block text-xs font-bold text-slate-700 mb-1.5">التصنيف التجاري *</label><select name="category_id" required class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500 font-bold"><option value="">اختر التصنيف...</option>@foreach($categories as $category)<option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->icon ?? '📁' }} {{ $category->name }}</option>@endforeach</select></div>
-                    <div><label class="block text-xs font-bold text-slate-700 mb-1.5">المحافظة الرئيسية *</label><select id="governorate-select" required class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500 font-bold"><option value="">اختر المحافظة...</option>@foreach($governorates as $gov)<option value="{{ $gov->id }}">{{ $gov->name }}</option>@endforeach</select></div>
-                    <div><label class="block text-xs font-bold text-slate-700 mb-1.5">المنطقة / المدينة الفرعية *</label><select id="region-select" name="location_id" required class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-200 cursor-not-allowed font-bold" disabled><option value="">اختر المحافظة أولاً...</option></select></div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">التصنيف التجاري *</label>
+                        <select name="category_id" required class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500 font-bold">
+                            <option value="">اختر التصنيف...</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                    {{ $category->icon ?? '📁' }} {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">المحافظة *</label>
+                        <select name="governorate_id" id="governorate-select" required class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500 font-bold">
+                            <option value="">اختر المحافظة...</option>
+                            @foreach($governorates as $gov)
+                                <option value="{{ $gov->id }}" {{ old('governorate_id') == $gov->id ? 'selected' : '' }}>{{ $gov->name }}</option>
+                            @endforeach
+                        </select>
+                        <div id="governorate-error" class="error-feedback hidden">⚠️ يرجى اختيار المحافظة</div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">المنطقة *</label>
+                        <select name="region_id" id="region-select" required class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-100 font-bold" disabled>
+                            <option value="">اختر المحافظة أولاً...</option>
+                        </select>
+                        <div id="region-error" class="error-feedback hidden">⚠️ يرجى اختيار المنطقة</div>
+                    </div>
                 </div>
 
                 <div class="space-y-4">
-                    <div><label class="block text-xs font-bold text-slate-700 mb-1.5">العنوان بالتفصيل (اختياري)</label><input type="text" name="address_detail" value="{{ old('address_detail') }}" placeholder="مثال: قدسيا، الشارع العام، بجانب صيدلية..." class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500 font-medium"></div>
-                    <div><label class="block text-xs font-bold text-slate-700 mb-1.5">وصف المنشأة والخدمات *</label><textarea name="description" rows="4" required placeholder="اكتب نبذة عن منشأتك، مواعيد العمل، وأهم الخدمات أو المنتجات التي تقدمها..." class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500 font-medium">{{ old('description') }}</textarea></div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">العنوان بالتفصيل (اختياري)</label>
+                        <input type="text" name="address_detail" value="{{ old('address_detail') }}" placeholder="مثال: قدسيا، الشارع العام، بجانب صيدلية..." class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">وصف المنشأة والخدمات *</label>
+                        <textarea name="description" rows="4" required placeholder="اكتب نبذة عن منشأتك، مواعيد العمل، وأهم الخدمات أو المنتجات التي تقدمها..." class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500 font-medium">{{ old('description') }}</textarea>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-bold text-slate-700 mb-1">لوجو / شعار المحل</label><p class="text-[10px] text-slate-400 mb-1.5">يفضل قياس مربع (أقصى حجم 2 ميجا)</p><input type="file" name="logo" class="w-full text-xs p-2 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500"></div>
-                    <div><label class="block text-xs font-bold text-slate-700 mb-1">صورة غلاف المنشأة</label><p class="text-[10px] text-slate-400 mb-1.5">تظهر في أعلى صفحة العرض (أقصى حجم 3 ميجا)</p><input type="file" name="cover" class="w-full text-xs p-2 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500"></div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">لوجو / شعار المحل</label>
+                        <p class="text-[10px] text-slate-400 mb-1.5">يفضل قياس مربع (أقصى حجم 2 ميجا)</p>
+                        <input type="file" name="logo" class="w-full text-xs p-2 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">صورة غلاف المنشأة</label>
+                        <p class="text-[10px] text-slate-400 mb-1.5">تظهر في أعلى صفحة العرض (أقصى حجم 3 ميجا)</p>
+                        <input type="file" name="cover" class="w-full text-xs p-2 border border-slate-200 rounded-xl bg-slate-50 focus:outline-emerald-500">
+                    </div>
                 </div>
 
                 <div class="flex items-center gap-2 bg-slate-50 p-4 rounded-xl border border-slate-100">
@@ -86,36 +134,158 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
+            // ============================================================
+            // 1. تحميل المناطق ديناميكياً
+            // ============================================================
             const govSelect = document.getElementById('governorate-select');
             const regionSelect = document.getElementById('region-select');
+            const govError = document.getElementById('governorate-error');
+            const regionError = document.getElementById('region-error');
 
-            function fetchRegions(governorateId) {
-                regionSelect.innerHTML = '<option value="">⏳ جاري تحميل المناطق...</option>';
-                regionSelect.disabled = true;
-                if (!governorateId) { regionSelect.innerHTML = '<option value="">❌ اختر المحافظة أولاً</option>'; return; }
-                
-                const apiUrl = `https://aza-international.com/dlil/get-regions/${governorateId}`;
-                
-                fetch(apiUrl, { headers: { 'Accept': 'application/json' } })
-                    .then(response => response.json())
-                    .then(data => {
-                        regionSelect.innerHTML = '<option value="">🏙️ اختر المنطقة الفرعية...</option>';
-                        if (data.length === 0) { regionSelect.innerHTML = '<option value="">⚠️ لا توجد مناطق تابعة</option>'; regionSelect.disabled = true; }
-                        else { data.forEach(region => { const option = document.createElement('option'); option.value = region.id; option.textContent = region.name; regionSelect.appendChild(option); }); regionSelect.disabled = false; }
-                    })
-                    .catch(error => { console.error(error); regionSelect.innerHTML = '<option value="">❌ خطأ في التحميل</option>'; regionSelect.disabled = true; });
+            if (!govSelect || !regionSelect) {
+                console.error('❌ عناصر المحافظة أو المنطقة غير موجودة!');
+                return;
             }
 
-            govSelect.addEventListener('change', function () { fetchRegions(this.value); });
+            function loadRegions(governorateId, selectedRegionId = null) {
+                if (!governorateId || governorateId === '') {
+                    regionSelect.innerHTML = '<option value="">اختر المحافظة أولاً</option>';
+                    regionSelect.disabled = true;
+                    if (regionError) regionError.classList.add('hidden');
+                    return;
+                }
 
-            let defaultLat = parseFloat(document.getElementById('lat-input').value);
-            let defaultLng = parseFloat(document.getElementById('lng-input').value);
+                regionSelect.innerHTML = '<option value="">⏳ جاري تحميل المناطق...</option>';
+                regionSelect.disabled = true;
+
+                const url = `/dlil/get-regions/${governorateId}`;
+                console.log('📡 جاري تحميل المناطق من:', url);
+
+                fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ تم استلام البيانات:', data);
+                    
+                    regionSelect.innerHTML = '';
+                    
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = '🏙️ اختر المنطقة الفرعية...';
+                    regionSelect.appendChild(defaultOption);
+                    
+                    if (data && Array.isArray(data) && data.length > 0) {
+                        data.forEach(region => {
+                            const option = document.createElement('option');
+                            option.value = region.id;
+                            option.textContent = region.name;
+                            if (selectedRegionId && selectedRegionId == region.id) {
+                                option.selected = true;
+                            }
+                            regionSelect.appendChild(option);
+                        });
+                        regionSelect.disabled = false;
+                        if (regionError) regionError.classList.add('hidden');
+                        console.log(`✅ تم تحميل ${data.length} منطقة`);
+                    } else {
+                        const noDataOption = document.createElement('option');
+                        noDataOption.value = '';
+                        noDataOption.textContent = '⚠️ لا توجد مناطق تابعة لهذه المحافظة';
+                        regionSelect.appendChild(noDataOption);
+                        regionSelect.disabled = true;
+                        if (regionError) regionError.classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ خطأ في تحميل المناطق:', error);
+                    regionSelect.innerHTML = '<option value="">❌ حدث خطأ في التحميل</option>';
+                    regionSelect.disabled = true;
+                    if (regionError) {
+                        regionError.textContent = '⚠️ حدث خطأ في تحميل المناطق';
+                        regionError.classList.remove('hidden');
+                    }
+                });
+            }
+
+            govSelect.addEventListener('change', function() {
+                const governorateId = this.value;
+                console.log('🔄 تغيير المحافظة إلى:', governorateId);
+                
+                if (govError) govError.classList.add('hidden');
+                if (regionError) regionError.classList.add('hidden');
+                
+                if (!governorateId || governorateId === '') {
+                    regionSelect.innerHTML = '<option value="">اختر المحافظة أولاً</option>';
+                    regionSelect.disabled = true;
+                    return;
+                }
+                
+                loadRegions(governorateId);
+            });
+
+            document.getElementById('businessForm').addEventListener('submit', function(e) {
+                let hasError = false;
+                
+                if (!govSelect.value) {
+                    if (govError) govError.classList.remove('hidden');
+                    hasError = true;
+                }
+                
+                if (!regionSelect.value || regionSelect.disabled) {
+                    if (regionError) {
+                        regionError.textContent = '⚠️ يرجى اختيار المنطقة';
+                        regionError.classList.remove('hidden');
+                    }
+                    hasError = true;
+                }
+                
+                if (hasError) {
+                    e.preventDefault();
+                }
+            });
+
+            const oldGovernorate = '{{ old('governorate_id') }}';
+            const oldRegion = '{{ old('region_id') }}';
+            if (oldGovernorate) {
+                console.log('🔄 تحميل المناطق الأولية للمحافظة:', oldGovernorate);
+                govSelect.value = oldGovernorate;
+                loadRegions(oldGovernorate, oldRegion);
+            }
+
+            // ============================================================
+            // 2. الخريطة
+            // ============================================================
+            let defaultLat = parseFloat(document.getElementById('lat-input').value) || 33.5138;
+            let defaultLng = parseFloat(document.getElementById('lng-input').value) || 36.2765;
+            
             let map = L.map('map-picker').setView([defaultLat, defaultLng], 12);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+                attribution: '© OpenStreetMap' 
+            }).addTo(map);
+            
             let marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
-            marker.on('dragend', function (e) { let pos = marker.getLatLng(); document.getElementById('lat-input').value = pos.lat.toFixed(6); document.getElementById('lng-input').value = pos.lng.toFixed(6); });
-            map.on('click', function (e) { marker.setLatLng(e.latlng); document.getElementById('lat-input').value = e.latlng.lat.toFixed(6); document.getElementById('lng-input').value = e.latlng.lng.toFixed(6); });
+            
+            marker.on('dragend', function(e) { 
+                let pos = marker.getLatLng(); 
+                document.getElementById('lat-input').value = pos.lat.toFixed(6); 
+                document.getElementById('lng-input').value = pos.lng.toFixed(6); 
+            });
+            
+            map.on('click', function(e) { 
+                marker.setLatLng(e.latlng); 
+                document.getElementById('lat-input').value = e.latlng.lat.toFixed(6); 
+                document.getElementById('lng-input').value = e.latlng.lng.toFixed(6); 
+            });
         });
     </script>
 </body>

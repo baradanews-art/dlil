@@ -1,0 +1,599 @@
+{{-- ============================================================ --}}
+{{-- 1. resources/views/search.blade.php --}}
+{{-- ============================================================ --}}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بحث: {{ $query ?? '' }} | دليل سوريا التجاري</title>
+    <meta name="robots" content="noindex, follow">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Tajawal', sans-serif; }
+        
+        .business-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .business-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 40px -15px rgba(0,0,0,0.15);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        
+        .filter-sidebar {
+            transition: all 0.3s ease;
+        }
+        .filter-sidebar .filter-group {
+            transition: all 0.2s ease;
+        }
+        .filter-sidebar .filter-group:hover {
+            background: #f8fafc;
+        }
+        
+        .search-input:focus {
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+        }
+        
+        .select-custom {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+            background-position: left 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-left: 2.5rem;
+        }
+        .select-custom:focus {
+            border-color: #10b981;
+            ring: 2px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .badge-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e5e7eb;
+            border-radius: 50%;
+            border-top-color: #10b981;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .result-count-badge {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .image-placeholder {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+        }
+        
+        .star-rating {
+            color: #fbbf24;
+        }
+        .star-rating .empty {
+            color: #d1d5db;
+        }
+        
+        /* تحسينات التجاوب */
+        @media (max-width: 1024px) {
+            .filter-sidebar {
+                position: sticky;
+                top: 80px;
+                max-height: calc(100vh - 100px);
+                overflow-y: auto;
+            }
+        }
+        
+        /* تخصيص شريط التمرير */
+        .filter-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .filter-sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .filter-sidebar::-webkit-scrollbar-thumb {
+            background: #10b981;
+            border-radius: 10px;
+        }
+        
+        .skeleton {
+            animation: shimmer 1.5s ease-in-out infinite;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-slate-50 to-white font-sans antialiased">
+
+    {{-- ============================================================ --}}
+    {{-- HEADER --}}
+    {{-- ============================================================ --}}
+    <header class="bg-white/80 backdrop-blur-lg border-b border-slate-100 sticky top-0 z-50 py-3 px-4">
+        <div class="container mx-auto flex flex-wrap justify-between items-center gap-3">
+            <a href="{{ route('home') }}" class="text-2xl font-black text-emerald-600 flex items-center gap-2">
+                <span class="bg-emerald-600 text-white text-sm px-2 py-1 rounded-lg">🇸🇾</span>
+                دليل سوريا
+            </a>
+            
+            <form action="{{ route('search') }}" method="GET" class="flex-1 max-w-2xl mx-auto">
+                <div class="relative group">
+                    <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors"></i>
+                    <input 
+                        type="text" 
+                        name="search" 
+                        value="{{ $query ?? '' }}" 
+                        class="search-input w-full border border-slate-200 rounded-2xl py-3 pr-12 pl-28 text-sm bg-slate-50/50 focus:bg-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                        placeholder="ابحث عن منشأة، خدمة، منتج..."
+                        id="searchInput"
+                    >
+                    <button type="submit" class="absolute left-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white px-5 py-1.5 rounded-xl text-sm font-bold hover:shadow-lg transition-all hover:scale-105">
+                        <i class="fas fa-search ml-1"></i> بحث
+                    </button>
+                </div>
+            </form>
+            
+            <a href="{{ route('business.create') }}" class="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white px-5 py-2.5 rounded-2xl text-sm font-bold hover:shadow-lg transition-all hover:scale-105 flex items-center gap-2">
+                <i class="fas fa-plus-circle"></i>
+                <span class="hidden sm:inline">أضف منشأتك</span>
+            </a>
+        </div>
+    </header>
+
+    {{-- ============================================================ --}}
+    {{-- MAIN CONTENT --}}
+    {{-- ============================================================ --}}
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            {{-- ============================================================ --}}
+            {{-- SIDEBAR FILTERS --}}
+            {{-- ============================================================ --}}
+            <aside class="lg:w-80 filter-sidebar">
+                <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-6 border border-slate-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="font-black text-slate-800 flex items-center gap-2 text-lg">
+                            <i class="fas fa-sliders-h text-emerald-600"></i>
+                            فلترة النتائج
+                        </h3>
+                        @if(request()->anyFilled(['location','region','category','sort','delivery','verified']))
+                            <a href="{{ route('search', ['search' => $query]) }}" class="text-xs text-slate-400 hover:text-emerald-600 transition-colors">
+                                <i class="fas fa-undo-alt"></i> إعادة ضبط
+                            </a>
+                        @endif
+                    </div>
+                    
+                    <form action="{{ route('search') }}" method="GET" id="filterForm">
+                        <input type="hidden" name="search" value="{{ $query ?? '' }}">
+                        
+                        {{-- Governorate Filter --}}
+                        <div class="filter-group mb-5">
+                            <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-2">
+                                <i class="fas fa-map-marker-alt text-emerald-500 text-xs"></i>
+                                المحافظة
+                            </label>
+                            <select 
+                                name="location" 
+                                id="governorateFilter" 
+                                class="select-custom w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+                            >
+                                <option value="">جميع المحافظات</option>
+                                @foreach($governorates ?? [] as $gov)
+                                    {{-- ✅ تم التعديل: استخدام id بدلاً من slug --}}
+                                    <option value="{{ $gov->id }}" {{ request('location') == $gov->id ? 'selected' : '' }}>
+                                        {{ $gov->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Region Filter (Dynamic) --}}
+                        <div class="filter-group mb-5" id="regionFilterWrapper">
+                            <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-2">
+                                <i class="fas fa-city text-emerald-500 text-xs"></i>
+                                المنطقة
+                            </label>
+                            <select 
+                                name="region" 
+                                id="regionFilter" 
+                                class="select-custom w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+                                disabled
+                            >
+                                <option value="">اختر المحافظة أولاً</option>
+                            </select>
+                        </div>
+
+                        {{-- Category Filter --}}
+                        <div class="filter-group mb-5">
+                            <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-2">
+                                <i class="fas fa-tags text-emerald-500 text-xs"></i>
+                                التصنيف
+                            </label>
+                            <select 
+                                name="category" 
+                                class="select-custom w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+                            >
+                                <option value="">جميع التصنيفات</option>
+                                @foreach($categories ?? [] as $cat)
+                                    <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>
+                                        {{ $cat->icon ?? '📁' }} {{ $cat->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Sort Filter --}}
+                        <div class="filter-group mb-5">
+                            <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-2">
+                                <i class="fas fa-sort-amount-down text-emerald-500 text-xs"></i>
+                                ترتيب حسب
+                            </label>
+                            <select 
+                                name="sort" 
+                                class="select-custom w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+                            >
+                                <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>الأحدث</option>
+                                <option value="rating" {{ request('sort') == 'rating' ? 'selected' : '' }}>الأعلى تقييماً</option>
+                                <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>الأقدم</option>
+                                <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>الأكثر مشاهدة</option>
+                            </select>
+                        </div>
+
+                        {{-- Extra Options --}}
+                        <div class="grid grid-cols-2 gap-3 mb-5">
+                            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 rounded-2xl p-3 border border-slate-200 hover:border-emerald-300 transition-all">
+                                <input 
+                                    type="checkbox" 
+                                    name="delivery" 
+                                    value="1" 
+                                    {{ request('delivery') ? 'checked' : '' }} 
+                                    class="rounded text-emerald-600 w-4 h-4"
+                                > 
+                                <span class="text-sm text-slate-700 font-medium">🛵 توصيل</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer bg-slate-50 rounded-2xl p-3 border border-slate-200 hover:border-emerald-300 transition-all">
+                                <input 
+                                    type="checkbox" 
+                                    name="verified" 
+                                    value="1" 
+                                    {{ request('verified') ? 'checked' : '' }} 
+                                    class="rounded text-emerald-600 w-4 h-4"
+                                > 
+                                <span class="text-sm text-slate-700 font-medium">⭐ موثق</span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold py-3 rounded-2xl hover:shadow-lg transition-all hover:scale-[1.02]">
+                            <i class="fas fa-filter ml-2"></i>
+                            تطبيق الفلترة
+                        </button>
+                    </form>
+                </div>
+            </aside>
+
+            {{-- ============================================================ --}}
+            {{-- RESULTS --}}
+            {{-- ============================================================ --}}
+            <main class="flex-1">
+                {{-- Results Header --}}
+                <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-6 mb-6 border border-slate-100">
+                    <div class="flex flex-wrap justify-between items-center gap-3">
+                        <div>
+                            <h1 class="text-2xl font-black text-slate-800 flex items-center gap-3">
+                                <i class="fas fa-search text-emerald-500"></i>
+                                نتائج البحث
+                            </h1>
+                            @if($query)
+                                <p class="text-sm text-slate-500 mt-1">
+                                    <span class="font-medium text-slate-700">"{{ $query }}"</span>
+                                </p>
+                            @endif
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="result-count-badge text-white px-4 py-2 rounded-2xl text-sm font-bold">
+                                {{ $businesses->total() }}
+                            </span>
+                            <span class="text-sm text-slate-500">نتيجة</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Results Grid --}}
+                @if($businesses->count() > 0)
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        @foreach($businesses as $bus)
+                        <div class="business-card bg-white rounded-3xl overflow-hidden shadow-xl shadow-slate-200/40 group">
+                            {{-- Cover Image --}}
+                            <div class="relative h-48 overflow-hidden bg-gradient-to-r from-slate-100 to-slate-200">
+                                <img 
+                                    src="{{ $bus->cover_url }}" 
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                    loading="lazy"
+                                    alt="{{ $bus->title }}"
+                                    onerror="this.style.display='none'"
+                                >
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                                
+                                {{-- Badges --}}
+                                <div class="absolute top-3 right-3 flex flex-wrap gap-1.5">
+                                    @if($bus->delivery_available)
+                                        <span class="bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg">
+                                            🛵 توصيل
+                                        </span>
+                                    @endif
+                                    @if($bus->verification_type == 'official')
+                                        <span class="bg-amber-500/90 backdrop-blur-sm text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg">
+                                            ⭐ رسمي
+                                        </span>
+                                    @endif
+                                    @if($bus->featured)
+                                        <span class="bg-purple-500/90 backdrop-blur-sm text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg">
+                                            🔥 مميز
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- Content --}}
+                            <div class="p-5">
+                                <div class="flex items-start gap-3">
+                                    <img 
+                                        src="{{ $bus->logo_url }}" 
+                                        class="w-14 h-14 rounded-2xl object-cover border-2 border-slate-100 flex-shrink-0"
+                                        alt="{{ $bus->title }}"
+                                        onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2256%22 height=%2256%22%3E%3Crect fill=%22%23f1f5f9%22 width=%2256%22 height=%2256%22/%3E%3Ctext x=%2228%22 y=%2236%22 font-size=%2220%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22%3E🏢%3C/text%3E%3C/svg%3E'"
+                                    >
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="font-bold text-slate-800 text-lg leading-tight group-hover:text-emerald-600 transition-colors line-clamp-1">
+                                            {{ $bus->title }}
+                                        </h3>
+                                        <p class="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                                            <span class="bg-slate-100 px-2 py-0.5 rounded-full">{{ $bus->category->name ?? 'عام' }}</span>
+                                            <span class="text-slate-300">•</span>
+                                            <span>{{ $bus->governorate->name ?? '' }}</span>
+                                            @if($bus->region)
+                                                <span class="text-slate-300">-</span>
+                                                <span>{{ $bus->region->name }}</span>
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <p class="text-sm text-slate-600 mt-3 line-clamp-2 leading-relaxed">
+                                    {{ Str::limit($bus->description, 100) }}
+                                </p>
+
+                                <div class="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
+                                    <div class="flex items-center gap-2">
+                                        <div class="star-rating text-sm">
+                                            @php $avgRating = $bus->reviews_avg_rating ?? 0; @endphp
+                                            @for($i=1; $i<=5; $i++)
+                                                <i class="fas fa-star{{ $i <= round($avgRating) ? '' : '-o' }}"></i>
+                                            @endfor
+                                        </div>
+                                        @if($bus->reviews_count > 0)
+                                            <span class="text-xs text-slate-400">({{ $bus->reviews_count }})</span>
+                                        @endif
+                                    </div>
+                                    <a href="{{ route('business.show', $bus->slug) }}" class="text-emerald-600 text-sm font-bold hover:bg-emerald-50 px-4 py-1.5 rounded-xl transition-all hover:scale-105">
+                                        تفاصيل <i class="fas fa-arrow-left mr-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Pagination --}}
+                    <div class="mt-8 bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-4 border border-slate-100">
+                        {{ $businesses->appends(request()->query())->links() }}
+                    </div>
+                @else
+                    {{-- Empty State --}}
+                    <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-16 text-center border border-slate-100">
+                        <div class="inline-block p-6 bg-slate-50 rounded-full mb-6">
+                            <i class="fas fa-search text-6xl text-slate-300"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-slate-700 mb-3">لا توجد نتائج</h3>
+                        <p class="text-slate-500 max-w-md mx-auto mb-8">
+                            لم نعثر على منشآت تطابق 
+                            <span class="font-bold text-slate-700">"{{ $query ?? '' }}"</span>
+                            @if(request()->anyFilled(['location','category']))
+                                <span class="block mt-2 text-sm text-slate-400">
+                                    <i class="fas fa-filter ml-1"></i>
+                                    حاول تعديل الفلاتر المستخدمة
+                                </span>
+                            @endif
+                        </p>
+                        <div class="flex flex-wrap justify-center gap-4">
+                            <a href="{{ route('business.create') }}" class="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white px-8 py-3 rounded-2xl font-bold hover:shadow-lg transition-all hover:scale-105">
+                                <i class="fas fa-plus-circle ml-2"></i>
+                                أضف منشأتك الآن
+                            </a>
+                            @if(request()->anyFilled(['location','category','sort','delivery','verified']))
+                                <a href="{{ route('search', ['search' => $query]) }}" class="bg-slate-100 text-slate-700 px-8 py-3 rounded-2xl font-bold hover:bg-slate-200 transition-all">
+                                    <i class="fas fa-undo-alt ml-2"></i>
+                                    إعادة ضبط الفلاتر
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+            </main>
+        </div>
+    </div>
+
+    {{-- ============================================================ --}}
+    {{-- SCRIPTS --}}
+    {{-- ============================================================ --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const governorateSelect = document.getElementById('governorateFilter');
+            const regionSelect = document.getElementById('regionFilter');
+            const filterForm = document.getElementById('filterForm');
+            
+            // التحقق من وجود العناصر
+            if (!governorateSelect || !regionSelect) {
+                console.error('❌ عناصر الفلترة غير موجودة!');
+                return;
+            }
+
+            // ✅ دالة تحميل المناطق (محسنة بنفس طريقة ملف الادمن)
+            function loadRegions(governorateId, selectedRegionId = null) {
+                // إذا لم يتم تحديد محافظة، نعرض الرسالة المناسبة
+                if (!governorateId || governorateId === '') {
+                    regionSelect.innerHTML = '<option value="">اختر المحافظة أولاً</option>';
+                    regionSelect.disabled = true;
+                    return;
+                }
+
+                // عرض حالة التحميل
+                regionSelect.innerHTML = '<option value="" disabled>⏳ جاري التحميل...</option>';
+                regionSelect.disabled = true;
+
+                // ✅ استخدام نفس مسار API المستخدم في ملف الادمن
+                const url = `/dlil/get-regions/${governorateId}`;
+                console.log('📡 جاري تحميل المناطق من:', url);
+
+                fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ تم استلام البيانات:', data);
+                    
+                    // تنظيف الـ select وإضافة الخيار الافتراضي
+                    regionSelect.innerHTML = '<option value="">جميع المناطق</option>';
+                    
+                    if (data && Array.isArray(data) && data.length > 0) {
+                        data.forEach(region => {
+                            const option = document.createElement('option');
+                            option.value = region.id;
+                            option.textContent = region.name;
+                            if (selectedRegionId && selectedRegionId == region.id) {
+                                option.selected = true;
+                            }
+                            regionSelect.appendChild(option);
+                        });
+                        regionSelect.disabled = false;
+                        console.log(`✅ تم تحميل ${data.length} منطقة`);
+                    } else {
+                        regionSelect.innerHTML = '<option value="">⚠️ لا توجد مناطق مسجلة لهذه المحافظة</option>';
+                        regionSelect.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ خطأ في تحميل المناطق:', error);
+                    regionSelect.innerHTML = '<option value="">❌ حدث خطأ في التحميل</option>';
+                    regionSelect.disabled = false;
+                });
+            }
+
+            // ✅ عند تغيير المحافظة (نفس طريقة ملف الادمن)
+            governorateSelect.addEventListener('change', function() {
+                const governorateId = this.value;
+                console.log('🔄 تغيير المحافظة إلى:', governorateId);
+                
+                // تحميل المناطق مباشرة باستخدام الـ ID
+                loadRegions(governorateId);
+                
+                // إرسال النموذج لتحديث النتائج
+                if (filterForm) {
+                    setTimeout(() => {
+                        filterForm.submit();
+                    }, 300);
+                }
+            });
+
+            // عند تغيير المنطقة - إرسال النموذج
+            regionSelect.addEventListener('change', function() {
+                if (filterForm) {
+                    setTimeout(() => {
+                        filterForm.submit();
+                    }, 300);
+                }
+            });
+
+            // ✅ تحميل المناطق عند تحميل الصفحة (نفس طريقة ملف الادمن)
+            const initialGovernorate = governorateSelect.value;
+            const initialRegion = '{{ request('region') }}';
+            
+            if (initialGovernorate) {
+                loadRegions(initialGovernorate, initialRegion);
+            }
+
+            // تحسين تجربة المستخدم - إرسال النموذج عند تغيير أي فلتر
+            document.querySelectorAll('#filterForm select, #filterForm input[type="checkbox"]').forEach(el => {
+                el.addEventListener('change', function(e) {
+                    // منع الإرسال المزدوج للمنطقة والمحافظة (لأننا نرسلهما يدوياً)
+                    if (this.id === 'regionFilter' || this.id === 'governorateFilter') {
+                        return;
+                    }
+                    if (filterForm) {
+                        setTimeout(() => {
+                            filterForm.submit();
+                        }, 300);
+                    }
+                });
+            });
+
+            // تحسين البحث - إرسال النموذج عند الضغط على Enter
+            document.getElementById('searchInput')?.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.closest('form').submit();
+                }
+            });
+
+            console.log('✅ تم تهيئة نظام البحث بنجاح');
+        });
+    </script>
+
+    {{-- ============================================================ --}}
+    {{-- FOOTER SCRIPT - تحسين الأداء --}}
+    {{-- ============================================================ --}}
+    <script>
+        // تحميل الصور بتقنية Lazy Loading محسنة
+        document.addEventListener('DOMContentLoaded', function() {
+            if ('IntersectionObserver' in window) {
+                const images = document.querySelectorAll('img[loading="lazy"]');
+                const imageObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            img.src = img.src; // Trigger load
+                            imageObserver.unobserve(img);
+                        }
+                    });
+                });
+                images.forEach(img => imageObserver.observe(img));
+            }
+        });
+    </script>
+</body>
+</html>
